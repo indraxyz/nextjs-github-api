@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { Button, Badge, Avatar } from "@heroui/react";
 
 export default function Home() {
   return (
@@ -49,6 +52,14 @@ export default function Home() {
           >
             Read our docs
           </a>
+          <Button color="secondary">Button</Button>
+          <Badge color="primary" content="5">
+            <Avatar
+              radius="md"
+              size="lg"
+              src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
+            />
+          </Badge>
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
