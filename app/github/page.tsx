@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input, addToast, Card, CardHeader, CardFooter } from "@heroui/react";
+import {
+  Input,
+  addToast,
+  Card,
+  CardHeader,
+  CardFooter,
+  Avatar,
+} from "@heroui/react";
 import {
   RiSearchLine,
-  RiUser6Fill,
+  // RiUser6Fill,
   RiGithubFill,
   RiGitRepositoryLine,
 } from "react-icons/ri";
@@ -25,8 +32,8 @@ const GithubPage = () => {
 
   useEffect(() => {
     // _searchUsers("enter");
-    _searchUserRepositories();
-    _detailUserProfile();
+    // _searchUserRepositories();
+    // _detailUserProfile();
   }, []);
 
   const _searchUsers = async (k: string) => {
@@ -52,7 +59,7 @@ const GithubPage = () => {
       title,
       description,
       color,
-      timeout: 2000,
+      timeout: 3000,
     });
   };
 
@@ -92,38 +99,22 @@ const GithubPage = () => {
         />
       </div>
       {/* users (first 5 users): card list*/}
-      <div className="flex flex-col max-sm:space-y-2 sm:flex-row sm:space-x-2 mt-6">
-        <Card className="w-full sm:w-1/3">
-          <CardHeader>
-            <RiUser6Fill className="text-4xl mr-2" />
-            Username
-          </CardHeader>
-          <CardFooter className="space-x-2">
-            <RiGithubFill className="text-xl" />
-            <RiGitRepositoryLine className="text-xl" />
-          </CardFooter>
-          {/* location, blog, bio */}
-        </Card>
-        <Card className="w-full sm:w-1/3">
-          <CardHeader>
-            <RiUser6Fill className="text-4xl mr-2" />
-            Username
-          </CardHeader>
-          <CardFooter className="space-x-2">
-            <RiGithubFill className="text-xl" />
-            <RiGitRepositoryLine className="text-xl" />
-          </CardFooter>
-        </Card>
-        <Card className="w-full sm:w-1/3">
-          <CardHeader>
-            <RiUser6Fill className="text-4xl mr-2" />
-            Username
-          </CardHeader>
-          <CardFooter className="space-x-2">
-            <RiGithubFill className="text-xl" />
-            <RiGitRepositoryLine className="text-xl" />
-          </CardFooter>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mt-8">
+        {users.map((user, i) => (
+          <div key={i} className="w-full">
+            <Card>
+              <CardHeader>
+                <Avatar src={user.avatar_url} />
+                <span className="text-lg ml-4">{user.login}</span>
+              </CardHeader>
+              <CardFooter className="space-x-2">
+                <RiGithubFill className="text-xl" />
+                <RiGitRepositoryLine className="text-xl" />
+              </CardFooter>
+              {/*avatar, html_url, login, repos_url, url */}
+            </Card>
+          </div>
+        ))}
       </div>
 
       {/* repositories: modal > repo list (listbox) */}
