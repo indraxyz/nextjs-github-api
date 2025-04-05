@@ -114,25 +114,39 @@
 // }
 
 import { Button } from "@heroui/react";
+import { RiGithubFill, RiPagesFill } from "react-icons/ri";
 
 const Main = () => {
   return (
     <div className="min-h-screen w-full flex">
       <div className="m-auto">
         <h1 className="text-xl">Github Repositories Explorer</h1>
-        <p>about this project ...</p>
+        <p>
+          data sources from github api. Front stack using typescript, nextjs,
+          heroui, react-icons and tailwindcss.
+        </p>
 
         <div className="mt-8 space-x-4 flex justify-center">
-          <Button as={"a"} href="/github" target="_blank" color="primary">
+          <Button
+            as={"a"}
+            href="/github"
+            target="_blank"
+            color="default"
+            variant="ghost"
+            startContent={<RiPagesFill className="text-2xl" />}
+          >
             Project
           </Button>
           <Button
+            isIconOnly
+            aria-label="Github Repositoriy"
             as={"a"}
             href="https://github.com/indraxyz/nextjs-github-api"
             target="_blank"
-            color="primary"
+            color="default"
+            variant="ghost"
           >
-            Github
+            <RiGithubFill className="text-2xl" />
           </Button>
         </div>
       </div>
