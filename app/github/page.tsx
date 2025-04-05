@@ -73,12 +73,22 @@ const GithubPage = () => {
   const _searchUsers = async (k: string) => {
     if (k.toLowerCase() == "enter" && search.length > 2) {
       await fetch(`https://api.github.com/search/users?q=${search}&per_page=5`)
-        .then((res) => res.json())
+        .then((res) => {
+          // console.log(res);
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error("Something went wrong");
+          _toast("Something went wrong", "warning");
+        })
         .then((data) => {
+          _toast("Users Search Success", "secondary");
           // USERS default sort ascending
           setUsers(data.items);
           console.log(data.items);
-          _toast("Users Search Success", "secondary");
+        })
+        .catch((error) => {
+          console.log(error);
         });
     } else {
       // notif
@@ -86,6 +96,24 @@ const GithubPage = () => {
         _toast("invalid, minimal 3 character", "warning");
       }
     }
+  };
+
+  const _searchUserRepositories = async (url: string) => {
+    await fetch(`${url}?sort=updated`)
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error("Something went wrong");
+        _toast("Something went wrong", "warning");
+      })
+      .then((data) => {
+        // REPOSITORIES sorting latest updated
+        console.log(data);
+        _toast("Repositories Search Success", "secondary");
+        setRepositories(data);
+        onOpen(); //open modal
+      });
   };
 
   const _toast = (title: string, color: colorToast) => {
@@ -96,17 +124,9 @@ const GithubPage = () => {
     });
   };
 
-  const _searchUserRepositories = async (url: string) => {
-    await fetch(`${url}?sort=updated`)
-      .then((res) => res.json())
-      .then((data) => {
-        // REPOSITORIES sorting latest updated
-        console.log(data);
-
-        _toast("Repositories Search Success", "secondary");
-        setRepositories(data);
-        onOpen(); //open modal
-      });
+  const _modalUserRepo = (user: GithubUser) => {
+    setUser(user);
+    _searchUserRepositories(user.repos_url);
   };
 
   // const _detailUserProfile = async () => {
@@ -117,11 +137,6 @@ const GithubPage = () => {
   //       console.log(data);
   //     });
   // };
-
-  const _modalUserRepo = (user: GithubUser) => {
-    setUser(user);
-    _searchUserRepositories(user.repos_url);
-  };
 
   return (
     <div className="p-4">
@@ -144,7 +159,7 @@ const GithubPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mt-8">
         {users.map((user: GithubUser, i) => (
           <div key={i} className="w-full">
-            <Card>
+            <Card className="transition-shadow duration-300 shadow-md hover:shadow-lg hover:shadow-gray-300">
               <CardHeader>
                 <Avatar src={user.avatar_url} />
                 <span className="text-lg ml-4">{user.login}</span>
@@ -211,5 +226,7 @@ const GithubPage = () => {
 };
 export default GithubPage;
 
-// ♻️ loading state with icon/ skeleton
-// ♻️ error api handling
+// ♻️
+// loading state with icon/ skeleton
+// handling if empty data
+// components
