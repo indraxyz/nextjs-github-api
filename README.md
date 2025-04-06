@@ -17,7 +17,7 @@ https://nextjs-github-api-fawn.vercel.app
 ## Run to Local Server
 
     REQUIRED Node.js installed .
-    Copy/download project folder from github,
+    Copy/download project from github,
     extract .zip (if download from  github),
     Open cmd/terminal, change to the project directory,
     Install package via terminal/cmd with “npm install”,

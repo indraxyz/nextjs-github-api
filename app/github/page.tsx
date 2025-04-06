@@ -16,6 +16,7 @@ import {
   useDisclosure,
   Listbox,
   ListboxItem,
+  Skeleton,
 } from "@heroui/react";
 import {
   RiSearchLine,
@@ -41,7 +42,6 @@ type GithubUser = {
   url: string; //user profile
 };
 
-// type repo
 type Repo = {
   id: number;
   name: string;
@@ -50,6 +50,31 @@ type Repo = {
   topics: string[];
   updated_at: string;
 };
+
+const _toast = (
+  title: string,
+  color: colorToast,
+  promise: Promise<unknown> | undefined
+) => {
+  addToast({
+    title,
+    color,
+    timeout: 2000,
+    promise: promise,
+  });
+};
+
+const UsersSkeleton = () => (
+  <div className="max-w-[300px] w-full flex items-center gap-3">
+    <div>
+      <Skeleton className="flex rounded-full w-12 h-12" />
+    </div>
+    <div className="w-full flex flex-col gap-2">
+      <Skeleton className="h-3 w-3/5 rounded-lg" />
+      <Skeleton className="h-3 w-4/5 rounded-lg" />
+    </div>
+  </div>
+);
 
 const GithubPage = () => {
   const [search, setSearch] = useState("");
@@ -63,6 +88,7 @@ const GithubPage = () => {
   });
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [repositories, setRepositories] = useState([]);
+  const [loadUsers, setLoadUsers] = useState(false);
 
   useEffect(() => {
     // _searchUsers("enter");
@@ -70,73 +96,64 @@ const GithubPage = () => {
     // _detailUserProfile();
   }, []);
 
-  const _searchUsers = async (k: string) => {
+  const _searchUsers = (k: string) => {
     if (k.toLowerCase() == "enter" && search.length > 2) {
-      await fetch(`https://api.github.com/search/users?q=${search}&per_page=5`)
-        .then((res) => {
-          // console.log(res);
-          if (res.ok) {
-            return res.json();
-          }
-          throw new Error("Something went wrong");
-          _toast("Something went wrong", "warning");
-        })
-        .then((data) => {
-          _toast("Users Search Success", "secondary");
-          // USERS default sort ascending
-          setUsers(data.items);
-          console.log(data.items);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      setLoadUsers(true);
+      _toast("Searching users", "primary", apiGetUsers());
     } else {
-      // notif
       if (k.toLowerCase() == "enter") {
-        _toast("invalid, minimal 3 character", "warning");
+        _toast("invalid, minimal 3 character", "warning", undefined);
       }
     }
   };
 
+  const apiGetUsers = async () =>
+    await fetch(`https://api.github.com/search/users?q=${search}&per_page=5`)
+      .then((res) => {
+        // console.log(res);
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error("Something went wrong");
+      })
+      .then((data) => {
+        // USERS default sort ascending
+        console.log(data.items);
+        setUsers(data.items);
+        setLoadUsers(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        alert(error);
+      });
+
   const _searchUserRepositories = async (url: string) => {
+    _toast("Searching repositories", "primary", apiGetRepos(url));
+  };
+
+  const apiGetRepos = async (url: string) =>
     await fetch(`${url}?sort=updated`)
       .then((res) => {
         if (res.ok) {
           return res.json();
         }
         throw new Error("Something went wrong");
-        _toast("Something went wrong", "warning");
       })
       .then((data) => {
         // REPOSITORIES sorting latest updated
         console.log(data);
-        _toast("Repositories Search Success", "secondary");
         setRepositories(data);
         onOpen(); //open modal
+      })
+      .catch((error) => {
+        console.log(error);
+        alert(error);
       });
-  };
-
-  const _toast = (title: string, color: colorToast) => {
-    addToast({
-      title,
-      color,
-      timeout: 3000,
-    });
-  };
 
   const _modalUserRepo = (user: GithubUser) => {
     setUser(user);
     _searchUserRepositories(user.repos_url);
   };
-
-  // const _detailUserProfile = async () => {
-  //   await fetch("https://api.github.com/users/indraxyz")
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       // user public information
-  //       console.log(data);
-  //     });
-  // };
 
   return (
     <div className="p-4">
@@ -157,27 +174,33 @@ const GithubPage = () => {
       </div>
       {/* users (first 5 users): card list*/}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mt-8">
-        {users.map((user: GithubUser, i) => (
-          <div key={i} className="w-full">
-            <Card className="transition-shadow duration-300 shadow-md hover:shadow-lg hover:shadow-gray-300">
-              <CardHeader>
-                <Avatar src={user.avatar_url} />
-                <span className="text-lg ml-4">{user.login}</span>
-              </CardHeader>
-              <CardFooter className="space-x-2">
-                <Link href={user.html_url} target="_blank">
-                  <RiGithubFill className="text-2xl" />
-                </Link>
-                <Link
-                  onPress={() => _modalUserRepo(user)}
-                  className="cursor-pointer"
-                >
-                  <RiGitRepositoryLine className="text-xl" />
-                </Link>
-              </CardFooter>
-            </Card>
-          </div>
-        ))}
+        {loadUsers ? (
+          <UsersSkeleton />
+        ) : users.length == 0 ? (
+          "Empty Users"
+        ) : (
+          users.map((user: GithubUser, i) => (
+            <div key={i} className="w-full">
+              <Card className="transition-shadow duration-300 shadow-md hover:shadow-lg hover:shadow-gray-300">
+                <CardHeader>
+                  <Avatar src={user.avatar_url} />
+                  <span className="text-lg ml-4">{user.login}</span>
+                </CardHeader>
+                <CardFooter className="space-x-2">
+                  <Link href={user.html_url} target="_blank">
+                    <RiGithubFill className="text-2xl" />
+                  </Link>
+                  <Link
+                    onPress={() => _modalUserRepo(user)}
+                    className="cursor-pointer"
+                  >
+                    <RiGitRepositoryLine className="text-xl" />
+                  </Link>
+                </CardFooter>
+              </Card>
+            </div>
+          ))
+        )}
       </div>
 
       {/* repositories: modal, overflow inside > repo list (listbox) */}
@@ -209,14 +232,6 @@ const GithubPage = () => {
                   )}
                 </Listbox>
               </ModalBody>
-              {/* <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Close
-                </Button>
-                <Button color="primary" onPress={onClose}>
-                  Action
-                </Button>
-              </ModalFooter> */}
             </>
           )}
         </ModalContent>
@@ -227,6 +242,4 @@ const GithubPage = () => {
 export default GithubPage;
 
 // ♻️
-// loading state with icon/ skeleton
-// handling if empty data
 // components
